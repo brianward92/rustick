@@ -41,11 +41,14 @@ fn main() -> std::io::Result<()> {
         );
 
         // Write to 127.0.0.1:9001
-        stream.write_all(msg.as_bytes())?;
         println!(
-            "Published `trade_id={}` from {} to 127.0.0.1:9001.",
+            "Publishing `trade_id={}` from {} to 127.0.0.1:9001.",
             i, addr
         );
+        if let Err(e) = stream.write_all(msg.as_bytes()) {
+            eprintln!("Client disconnected: {}", e);
+            break Ok(());
+        }
         sleep(Duration::from_millis(rng.gen_range(1..=50)));
         i += 1;
     }
