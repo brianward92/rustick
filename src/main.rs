@@ -1,4 +1,5 @@
 use chrono::Utc;
+use rand::Rng;
 
 struct TradeTick {
     ts: i64,
@@ -13,5 +14,12 @@ fn main() {
         price: 123.45,
         size: 5,
     };
-    println!("Trade at {} at price {} of size {}.", trd.ts, trd.price, trd.size);
+    println!(
+        "Trade at {} at price {} of size {}.",
+        trd.ts, trd.price, trd.size
+    );
+
+    let mut rng = rand::thread_rng();
+    let x: i32 = rng.gen_range(1..=20);
+    println!("Random number: {}", x);
 }
