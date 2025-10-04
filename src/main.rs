@@ -1,3 +1,6 @@
+use std::thread::sleep;
+use std::time::Duration;
+
 use chrono::Utc;
 use rand::Rng;
 
@@ -10,6 +13,8 @@ struct TradeTick {
 fn main() {
     let mut rng = rand::thread_rng();
     for i in 1..=10 {
+        let d = rng.gen_range(1..=50);
+        sleep(Duration::from_millis(d));
         let now = Utc::now().timestamp_nanos_opt().expect("Bad timestamp");
         let p:f64 = rng.gen_range(95.0..=105.0);
         let p = (p * 100.0).round() / 100.0;
@@ -20,7 +25,7 @@ fn main() {
             size: s,
         };
         println!(
-            "Trade {} at {} at price {} of size {}.",
+            "Trade {} at {} at price {:.2} of size {}.",
             i, trd.ts, trd.price, trd.size
         );
     }
