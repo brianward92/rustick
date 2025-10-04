@@ -1,5 +1,7 @@
 use std::io::Write;
+use std::net::SocketAddr;
 use std::net::TcpListener;
+use std::net::TcpStream;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -11,20 +13,11 @@ struct TradeTick {
     price: f64,
     size: u32,
 }
-
-fn main() -> std::io::Result<()> {
-    // Reserve local address space
-    let server_socket =
-        TcpListener::bind("127.0.0.1:9001").expect("Could not bind to 127.0.0.1:9001");
-    println!("Allocated on 127.0.0.1:9001");
-
-    // Connect from this process
-    let (mut stream, addr) = server_socket.accept()?;
-    println!("Publishing from {}", addr);
+fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
 
     // Publish random prices as ticks
     let mut rng = rand::thread_rng();
-    let mut i = 1;
+    let mut i:i64 = 1;
     loop {
         let now = Utc::now().timestamp_nanos_opt().expect("Bad timestamp");
         let p: f64 = rng.gen_range(95.0..=105.0);
@@ -47,9 +40,30 @@ fn main() -> std::io::Result<()> {
         );
         if let Err(e) = stream.write_all(msg.as_bytes()) {
             eprintln!("Client disconnected: {}", e);
-            break Ok(());
+            break i;
         }
         sleep(Duration::from_millis(rng.gen_range(1..=50)));
         i += 1;
+    }
+}
+
+fn main() -> std::io::Result<()> {
+    // Reserve local address space
+    let server_socket =
+        TcpListener::bind("127.0.0.1:9001").expect("Could not bind to 127.0.0.1:9001");
+    println!("Allocated on 127.0.0.1:9001");
+
+    // Loop Publisher
+    loop {
+        // Wait for extenral process
+        println!("Waiting for next client...");
+        let (stream, addr) = server_socket.accept()?;
+
+        // Someone connnected, time to publish
+        println!("Publishing from {}", addr);
+        let nticks: i64 = publish_ticks(stream, addr);
+        println!("Published {} tick(s) from {}", nticks, addr);
+
+        // They disconnected
     }
 }
