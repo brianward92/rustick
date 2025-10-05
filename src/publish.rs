@@ -1,7 +1,5 @@
 use std::io::Write;
-use std::net::SocketAddr;
-use std::net::TcpListener;
-use std::net::TcpStream;
+use std::net::{SocketAddr, TcpStream};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -10,6 +8,8 @@ use rand::Rng;
 use serde_json;
 
 use crate::tick::TradeTick;
+
+pub const SERVER_ADDR: &str = "127.0.0.1:9001";
 
 pub fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
     // Publish random prices as ticks
@@ -28,10 +28,9 @@ pub fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
         let mut msg = serde_json::to_string(&trd).expect("JSON serialization failed.");
         msg.push('\n');
 
-        // Write to 127.0.0.1:9001
         println!(
-            "Publishing `trade_id={}` from {} to 127.0.0.1:9001.",
-            i, addr
+            "Publishing `trade_id={}` from {} to {}.",
+            i, addr, SERVER_ADDR
         );
         if let Err(e) = stream.write_all(msg.as_bytes()) {
             eprintln!("Client disconnected: {}", e);
@@ -40,10 +39,4 @@ pub fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
         sleep(Duration::from_millis(rng.gen_range(1..=50)));
         i += 1;
     }
-}
-
-pub fn wait_for_client(server_socket: &TcpListener) -> std::io::Result<(TcpStream, SocketAddr)> {
-    println!("Waiting for next client...");
-    let (stream, addr) = server_socket.accept()?;
-    Ok((stream, addr))
 }
