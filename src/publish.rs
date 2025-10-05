@@ -1,5 +1,6 @@
 use std::io::Write;
 use std::net::SocketAddr;
+use std::net::TcpListener;
 use std::net::TcpStream;
 use std::thread::sleep;
 use std::time::Duration;
@@ -39,4 +40,10 @@ pub fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
         sleep(Duration::from_millis(rng.gen_range(1..=50)));
         i += 1;
     }
+}
+
+pub fn wait_for_client(server_socket: &TcpListener) -> std::io::Result<(TcpStream, SocketAddr)> {
+    println!("Waiting for next client...");
+    let (stream, addr) = server_socket.accept()?;
+    Ok((stream, addr))
 }
