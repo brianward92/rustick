@@ -7,9 +7,21 @@ use chrono::Utc;
 use rand::Rng;
 use serde_json;
 
+use crate::server;
 use crate::tick::TradeTick;
 
 pub const SERVER_ADDR: &str = "127.0.0.1:9001";
+
+pub fn publish_ticks_from_default() -> std::io::Result<()> {
+    let server_socket = server::get_server_socket(SERVER_ADDR)?;
+
+    loop {
+        let (stream, addr) = server::wait_for_client(&server_socket)?;
+        println!("Publishing from {}", addr);
+        let nticks = publish_ticks(stream, addr);
+        println!("Published {} tick(s) from {}", nticks, addr);
+    }
+}
 
 pub fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
     // Publish random prices as ticks
