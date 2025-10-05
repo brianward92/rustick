@@ -7,17 +7,19 @@ use std::time::Duration;
 
 use chrono::Utc;
 use rand::Rng;
+use serde::Serialize;
+use serde_json;
 
+#[derive(Serialize)]
 struct TradeTick {
     ts: i64,
     price: f64,
     size: u32,
 }
 fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
-
     // Publish random prices as ticks
     let mut rng = rand::thread_rng();
-    let mut i:i64 = 1;
+    let mut i: i64 = 1;
     loop {
         let now = Utc::now().timestamp_nanos_opt().expect("Bad timestamp");
         let p: f64 = rng.gen_range(95.0..=105.0);
@@ -28,10 +30,8 @@ fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
             price: p,
             size: s,
         };
-        let msg = format!(
-            "trade_id={} at {} at price {:.2} of size {}.",
-            i, trd.ts, trd.price, trd.size
-        );
+        let mut msg = serde_json::to_string(&trd).expect("JSON serialization failed.");
+        msg.push('\n');
 
         // Write to 127.0.0.1:9001
         println!(
