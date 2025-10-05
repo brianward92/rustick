@@ -12,6 +12,7 @@ use serde_json;
 mod tick;
 use crate::tick::TradeTick;
 
+#[inline(never)]
 fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
     // Publish random prices as ticks
     let mut rng = rand::thread_rng();
