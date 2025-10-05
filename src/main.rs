@@ -7,15 +7,11 @@ use std::time::Duration;
 
 use chrono::Utc;
 use rand::Rng;
-use serde::Serialize;
 use serde_json;
 
-#[derive(Serialize)]
-struct TradeTick {
-    ts: i64,
-    price: f64,
-    size: u32,
-}
+mod tick;
+use crate::tick::TradeTick;
+
 fn publish_ticks(mut stream: TcpStream, addr: SocketAddr) -> i64 {
     // Publish random prices as ticks
     let mut rng = rand::thread_rng();
